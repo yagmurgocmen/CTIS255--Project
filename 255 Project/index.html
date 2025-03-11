@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="./jquery-3.7.1.min.js"></script>
+    <script src="db.js"></script>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" integrity="sha512-xh6O/CkQoPOWDdYTDqeRdPCVd1SpvCA9XXcUnZS2FmJNp1coAFzvtCN9BmamE+4aHK8yyUHUSCcJHgXloTyT2A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <title>2024-Fall-Project</title>
+</head>
+<body>
+    <!--Begin: Initial Page-->
+   
+
+    <!--Begin: Login Page-->
+    <div id="projectBody">
+        <div id="content">
+            <div id="initialPage">
+                <p>Tarık Anafarta, 22303823</p>
+                <p>Yağmur Göçmen, 22202755</p>
+                <p>Ilgın Tandoğan, 22203709</p>
+                <p>Duru Yiğit, 22301663</p>
+            </div>
+        </div>
+        <!--End: Login Page-->
+        
+        <!--Begin: Market Page-->
+        <div id="mainUI">
+        </div>
+    </div>
+    
+
+
+    <!--Begin: Trading and Wallet-->
+
+    <script>
+        //Begin: Login Page
+            
+            var profileName;
+             $("#content").append(`
+             <div class="header">
+                    <p><span class="ctis">CTIS</span> Crypto Trading Information System</p>
+                    
+                <div id="topRight">
+                    <div id="user">
+                        <p><i class="fa-solid fa-user"></i><span></span></p>
+                    </div>
+
+                    <button id="logout">
+                        <i class="fas fa-door-open"><span> Logout</span></i>
+                    </button>
+                </div>
+            </div>
+                <button class="add-button">+ New Profile</button>
+            
+                <div id="profileSection">
+                    <div class="profiles" id="profilesContainer">
+                        <h3 id="emptyMessage">Empty</h3>
+                    </div>
+                    <footer class="footerContainer" id="addProfilePopup">
+                        <h1>New Profile</h1>
+                        <div class="add-profile">
+                            <input type="text" id="profileName" placeholder="Enter new profile...">
+                            <br><br>
+                            <button id="addProfileButton">Add</button>
+                        </div>
+                    </footer>
+                </div>        
+             `)
+
+             $("#topRight").hide();
+            
+             $(document).ready(function () {
+                 $("#emptyMessage").hide();
+            });
+
+            function checkEmptyState() {
+                if ($("#profilesContainer").children(".profile").length === 0) {
+                      $("#emptyMessage").show();
+                } else {
+                      $("#emptyMessage").hide();
+                }
+            }
+            
+            function showAddProfilePopup() {
+                $("#initialPage").hide();
+                $("#addProfilePopup").show();
+                $(".add-button").show();
+                $("body").addClass('dimmed');
+                $(".add-button").css("background", "rgba(211,211,211,0)");
+                $("#emptyMessage").show();
+                $(".add-button").css("cursor", "default");
+            }
+            function addProfile() {
+                $(".add-button").css("cursor", "pointer")
+                profileName = $('#profileName').val().trim();
+                if (!profileName) return;
+            
+                var $profileDiv = $('<div>', { class: 'profile' });
+                var $profileIcon = $('<i>', { class: 'fa-solid fa-user' });
+                var $profileText = $('<span>').text(profileName);
+                var $deleteButton = $('<button>', { class: 'delete' }).text('X');
+                
+            $deleteButton.on('click', function (e) {
+                e.stopPropagation();
+                $profileDiv.remove();
+                checkEmptyState();
+                
+            });
+            
+            $profileDiv.append($profileIcon, $profileText, $deleteButton);
+            $("#profilesContainer").append($profileDiv);
+        
+            $('#profileName').val("");
+            $("#addProfilePopup").hide();
+            $(".add-button").show();
+            $("body").removeClass('dimmed');
+            checkEmptyState();
+        }
+        
+        $('#profileName').on('keydown', function (e) {
+            if (e.key === 'Enter') {
+                e.stopPropagation();
+                addProfile();
+            }
+        });
+        
+        $(".add-button").on('click', showAddProfilePopup);
+        $('#addProfileButton').on('click', addProfile);
+    
+        checkEmptyState();
+        
+        $("#profilesContainer").on("click", ".profile", function() {
+            profileName = $(this).find('span').text();
+            showTradingScreen(profileName)
+        })   
+    //End: Login Page
+    
+    //Begin: Market Page
+        let index = 1;
+        let days = 1;
+        let timer = null;
+        let x = 0 ;
+        let sellOrBuy = 1;
+        let currentSelectedCode = $(".heartbeat").attr("id")
+        let calendarDays = 2
+
+        const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+        function showTradingScreen(profileName) {  
+            $("#chart").html("")
+            $("#content").css("height", "40px")
+            $("#user span").text(profileName)
+            $("#mainUI").show()
+            $("#topRight").show();
+            $("#profileSection").hide();
+            $(".add-button").hide();
+            $("#mainUI").html(`
+            <h1 id="days">Day 2</h1>
+        <h2 id="date">2 January 2021</h2>
+        <div class="buttons">
+            <button id="btnNextDay"><i class="fa-solid fa-forward"></i> Next Day</button>
+            <button id="btnPlay"><i class="fa-solid fa-play"></i> Play</button>
+        </div>
+
+        <div id="coins">
+            <div id="coinsMenu">
+                <img src="images/ada.png" id="ada"/>
+                <img src="images/avax.png" id="avax"/>
+                <img class="heartbeat" src="images/btc.png" id="btc"/>
+                <img src="images/doge.png" id="doge"/>
+                <img src="images/eth.png" id="eth"/>
+                <img src="images/pol.png" id="pol"/>
+                <img src="images/snx.png" id="snx"/>
+                <img src="images/trx.png" id="trx"/>
+                <img src="images/xrp.png" id="xrp"/>
+              </div>
+              <div id="selectedCoin">
+                <img src="images/btc.png" />
+                <p>Bitcoin<span id="coinMarketOnThatDay"></span></p>
+              </div>
+              <div id="chart"></div>
+        </div>
+
+        <div id="balance">
+            <p>$<span>1000.000</span></p>
+        </div>
+
+        <div id="bottomSection">
+            <div class="trading">
+                <h2>Trading</h2>        
+                <div id="button_container">
+                    <button class="buybtn" id="buy">Buy</button>
+                    <button class="buybtn" id="sell">Sell</button>
+                </div>
+
+                <div class="input_container">             
+                    <input type="text" id="amount" placeholder="Amount">
+                    <div id="info"> = $<span id="dollarEquivalent"></span></div>
+                </div>
+    
+                <button class="buybtn" id="buybitcoin">Buy BITCOIN</button>
+            </div>
+    
+            <div class="wallet">
+                <h2>Wallet</h2>
+                <table>
+                    <tbody>
+                        <tr>
+                            <th>Coin</th>
+                            <th>Amount</th>
+                            <th>Subtotal</th>
+                            <th>Last Close</th>
+                        </tr>
+                    
+                        <tr>
+                            <td>Dolar</td>
+                            <td style="font-weight: bold;">$<span>1000</span></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>  
+        </div>     
+    
+            `)
+            $("#chart .candleStick").first().remove();
+            var selectedCode = $(".heartbeat").attr("id")
+            drawNewCoinMarket(selectedCode);
+        }
+
+        $(document).on("input", "#amount", function(){
+            let buyAmount = parseFloat(this.value)
+            buyAmount = buyAmount.toFixed(5)
+            if (isNaN(buyAmount))
+                $("#dollarEquivalent").text("")
+            else {
+                var selectedCode=$(".heartbeat").attr("id")
+                var selectedDayMarket = market[days-1]
+                var selectedCoin = selectedDayMarket.coins.find(coin => coin.code === selectedCode)
+
+                var dailyClose = selectedCoin.close
+                $("#dollarEquivalent").text((buyAmount*dailyClose).toFixed(5))
+            }
+                
+        })
+        
+        $(document).on('click', '#btnNextDay', function nextDay(){
+            for (let i = index; i < market.length; i++) {
+                if (days==364)
+                    return;
+                let rawDate = market[i+1].date;
+                let [day, month, year] = rawDate.split('-');
+            
+                let currentDay = parseInt(day);
+                let currentMonth = parseInt(month);
+                let currentYear = parseInt(year);
+                
+                days++;
+                
+                calendarDays ++;
+                console.log(days)
+
+                if (days == 364) {
+                    $(".trading").remove()
+                    $(".wallet").css("width", "100%")
+                    $("#balance").addClass("heartbeat")
+                }                
+    
+                $("#date").text(currentDay + " " + months[currentMonth-1] + " " + currentYear) 
+                $("#days").text("Day " + calendarDays)
+                index++;
+
+                var selectedCode = $(".heartbeat").attr("id");
+                $("#chart").html("")
+                drawNewCoinMarket(selectedCode)
+
+                var selectedDayMarket = market[days-1]
+                
+                var totalBalance = 0
+
+                for (let i = 3; i <= $(".wallet table tbody tr").length; i++) {
+                    var amountcalc = parseFloat($(`.wallet table tbody tr:nth-of-type(${i}) td:nth-of-type(2)`).text())
+                    var imgSrc = $(`.wallet table tbody tr:nth-of-type(${i}) td:nth-of-type(1) img`).attr('src')
+                    var selectedCodeCalc = imgSrc.split('/').pop().split('.')[0]
+                    var selectedCoin = selectedDayMarket.coins.find(coin => coin.code === selectedCodeCalc)
+                    var dailyClose = selectedCoin.close
+                    var dailyclosecalc = dailyClose;
+                    var subtotalrecalc = amountcalc * dailyClose;
+                    $(`.wallet table tbody tr:nth-of-type(${i}) td:nth-of-type(4)`).text(dailyClose)
+                    $(`.wallet table tbody tr:nth-of-type(${i}) td:nth-of-type(3)`).text(subtotalrecalc.toFixed(3))
+                    totalBalance += subtotalrecalc
+                }
+
+                totalBalance += parseFloat($(`.wallet table tbody tr:nth-of-type(2) td:nth-of-type(2) span`).text())
+
+                $("#balance span").text(totalBalance.toFixed(3))
+                                
+                if (days > 120) {
+                    let removeCount = days - 120;
+                    for (let i = 0; i < removeCount; i++) {
+                        $("#chart .candleStick").first().remove();
+                    }
+                } 
+                break;
+            }       
+        })
+        
+        $(document).on("click", "#coinsMenu img", function(){
+            $("#chart").html("") //to clean the graph
+        
+            currentSelectedCode = $(this).attr("id");
+            var selectedCoin = coins.find(coin => coin.code === currentSelectedCode)
+           
+            $("#selectedCoin img").attr("src", "images/" + selectedCoin.image)
+            $("#selectedCoin p").html(`${selectedCoin.name} <span id="coinMarketOnThatDay"></span>`)
+            if (sellOrBuy)
+                $("#buybitcoin").text("Buy " + selectedCoin.name.toUpperCase())
+            else
+                $("#buybitcoin").text("Sell " + selectedCoin.name.toUpperCase())
+               
+            drawNewCoinMarket(currentSelectedCode)
+
+            if (days > 120) {
+                    let removeCount = days - 120;
+                    for (let i = 0; i < removeCount; i++) {
+                        $("#chart .candleStick").first().remove();
+                    }
+                } 
+
+            $("#coinsMenu img").removeClass("heartbeat") // Remove the heartbeat class from all coins
+                    
+            $(this).addClass("heartbeat")
+        });
+
+        $(document).on("click", "#buybitcoin", function(){
+
+            var buyamount = parseFloat($("#amount").val());
+            if (isNaN(buyamount)) return;
+
+            var buyOrSell = $(this).text().split(" ")[0];
+
+            if (buyOrSell == "Buy") {
+                var selectedCode = $(".heartbeat").attr("id");
+                var selectedCoin = coins.find(coin => coin.code === selectedCode);
+                var selectedimage = $("#selectedCoin img").attr("src", "images/" + selectedCoin.image);
+                var dollar = parseFloat($("#dollarEquivalent").text());
+                var currentDollar = parseFloat($(".wallet table tr:nth-of-type(2) td:nth-of-type(2) span").text());
+
+                if (dollar>currentDollar)
+                    return
+                var selectedDayMarket = market[days - 1];
+                var selectedCoinValues = selectedDayMarket.coins.find(coin => coin.code === selectedCode);
+
+                $(".wallet table tr:nth-of-type(2) td:nth-of-type(2) span").text((currentDollar - dollar).toFixed(4));
+
+                var existingRow = $(".wallet table tbody tr").filter(function() {
+                    return $(this).find("td").first().text().includes(selectedCoin.name);
+                });
+
+                if (existingRow.length > 0) {
+                    var existingAmount = parseFloat(existingRow.find("td:nth-of-type(2)").text());
+                    var updatedAmount = existingAmount + buyamount;
+                    existingRow.find("td:nth-of-type(2)").text(updatedAmount.toFixed(5));
+
+                    var existingSubtotal = parseFloat(existingRow.find("td:nth-of-type(3)").text());
+                    var updatedSubtotal = existingSubtotal + dollar;
+                    existingRow.find("td:nth-of-type(3)").text(updatedSubtotal.toFixed(3));
+                } else {
+                    
+                    $(".wallet table tbody").append(`
+                        <tr>
+                            <td style="display: flex; align-items: center;">
+                                <img src="images/${selectedCoin.image}" style="max-width: 20px; margin-right: 10px;"/> ${selectedCoin.name}
+                            </td>
+                            <td>${buyamount.toFixed(5)}</td>
+                            <td>${dollar.toFixed(3)}</td>
+                            <td>${selectedCoinValues.close}</td>
+                        </tr>
+                    `);
+                }
+
+                let currBalance = currentDollar + dollar;
+                $("#amount").val("");
+                $("#dollarEquivalent").text("");
+            }
+
+            else {
+                var selectedCode = $(".heartbeat").attr("id");
+                var selectedCoin = coins.find(coin => coin.code === selectedCode);
+                var selectedimage = $("#selectedCoin img").attr("src", "images/" + selectedCoin.image);
+                var dollar = parseFloat($("#dollarEquivalent").text());
+                var selectedDayMarket = market[days - 1];
+                var selectedCoinValues = selectedDayMarket.coins.find(coin => coin.code === selectedCode);
+                var currentDollar = parseFloat($(".wallet table tr:nth-of-type(2) td:nth-of-type(2) span").text());
+                        
+                var existingRow = $(".wallet table tbody tr").filter(function() {
+                    return $(this).find("td").first().text().includes(selectedCoin.name);
+                });
+                
+                if (existingRow.length === 0) {
+                    return;
+                }
+            
+                var existingAmount = parseFloat(existingRow.find("td:nth-of-type(2)").text());
+                if (existingAmount < buyamount) {
+                    return; 
+                }
+                            
+                var updatedAmount = existingAmount - buyamount;
+                existingRow.find("td:nth-of-type(2)").text(updatedAmount.toFixed(5));
+               
+                var existingSubtotal = parseFloat(existingRow.find("td:nth-of-type(3)").text());
+                var updatedSubtotal = existingSubtotal - dollar;
+                existingRow.find("td:nth-of-type(3)").text(updatedSubtotal.toFixed(3));
+                
+                $(".wallet table tr:nth-of-type(2) td:nth-of-type(2) span").text((currentDollar + dollar).toFixed(4));
+               
+                if (updatedAmount === 0) {
+                    existingRow.remove();
+                }
+        
+                $("#amount").val("");
+                $("#dollarEquivalent").text("");
+            }
+
+        })
+
+        $(document).on('click', '#logout', function (){
+            $("#user span").text("")
+            $("#mainUI").hide()
+            $("#topRight").hide()
+            $("#content").show()
+            $(".add-button").show()
+            $("#profileSection").show()            
+            $("#content").css("height", "685px")
+
+        }) 
+
+        function dayCounter() {
+            $("#btnNextDay").trigger("click");
+        }
+
+        $(document).on('click', '#btnPlay', function nextDay(){
+            if (timer === null) {
+                timer = setInterval(dayCounter, 100) ;
+                $(this).html(`<i class="fa-solid fa-pause"></i> Pause`)
+                if (days == 365) {
+                    $(".trading").remove()
+                    $(".wallet").css("width", "100%")
+                    $("#balance").addClass("heartbeat")
+                }
+            } else {
+                clearInterval(timer)
+                $(this).html(`<i class="fa-solid fa-play"></i> Play`)
+                timer = null 
+            }
+        })
+
+        function drawNewCoinMarket(coinCode) {
+            $("#chart").empty()
+            const coinData = getCoinData(coinCode)
+            if (!coinData.length) return
+
+            const globalMin = Math.min(...coinData.map(d => d.low))
+            const globalMax = Math.max(...coinData.map(d => d.high))
+            const range = globalMax - globalMin
+
+            if (range == 0)
+                range = 1
+            
+            const scale = 300 / range // 400 is the height of the chart
+           for (let i = 0; i<days; i++) {
+               drawCandleStick(coinCode, scale, i, globalMin);
+           }
+
+        }
+
+        function showOneDayMarket(coinCode) {
+            const coinData = getCoinData(coinCode);
+            if (!coinData.length) return;
+           
+            const globalMin = Math.min(...coinData.map(d => d.low))
+            const globalMax = Math.max(...coinData.map(d => d.high))
+            const range = globalMax - globalMin
+
+            if (range == 0)
+                range = 1
+            
+            const scale = 300 / range // 400 is the height of the chart
+            
+            drawCandleStick(coinCode, scale, days, globalMin);
+            
+        }
+
+
+
+        function dashedLine(value,pos, checkRed){ 
+            
+            
+
+            $(".dashedline").remove();
+
+            const dashedline= $(`<div class="dashedline"><p>$${value}</p></div>`);
+            
+            
+            if(checkRed)
+           {
+            dashedline.css("bottom", pos+20 + "px");
+           }
+           else
+           {
+            dashedline.css("bottom", pos+20 + "px");
+           }
+
+
+            $("#chart").append(dashedline);
+
+          
+
+        }
+
+        function line(globalmin, globalmax, scale){
+           
+            $(".minline ,.maxline").remove();
+
+            
+           
+
+            const minline= $(`<div class="minline"><p>$${globalmin}</p></div>`);
+           
+            
+            const maxline= $(`<div class="maxline"><p>$${globalmax}</p></div>`);
+           
+
+            $("#chart").append(minline,maxline);
+        }
+        
+        function drawCandleStick(coinCode, scale, i, globalMin){
+            let candleStick = $('<div class = "candleStick"> </div>')
+
+            selectedCoin = market[i].coins.find(coin => coin.code === coinCode)                
+                openC = selectedCoin.open
+                high = selectedCoin.high
+                low = selectedCoin.low
+                closeC = selectedCoin.close
+            
+            let stick = $('<div class= "stick"> </div>');
+            let stickHeight = (high-low) * scale;
+            stick.css({height: stickHeight +'px',
+                bottom: (low-globalMin)*scale+20 + 'px'
+            });
+
+            var candleHeight = Math.abs(openC-closeC) * scale;
+            let candleColor = closeC > openC ? "green" : "red";
+            let candle = $('<div class = "candle"> </div>');
+            
+            candle.css({height: candleHeight + 'px',
+                        bottom: (Math.min(openC,closeC)-globalMin)*scale+20 + 'px',
+                        backgroundColor: candleColor
+                        
+            });       
+            
+            if (candleColor == "red")
+            {
+                let dashedlinepos = (Math.min(openC, closeC) - globalMin) *scale;
+                dashedLine(closeC,dashedlinepos, true );
+            }
+            else
+            {
+                 dashedlinepos= (Math.max(openC, closeC) - globalMin)*scale;
+                dashedLine(closeC,dashedlinepos, false);
+            }
+
+            
+            candleStick.append(stick).append(candle.attr("index", i))
+            $("#chart").append(candleStick)  
+
+            
+            const coinData = getCoinData(coinCode)
+            if (!coinData.length) return
+           
+            const dashedLow = Math.min(...coinData.map(d => d.low))
+            const dashedHigh = Math.max(...coinData.map(d => d.high))
+
+            line(dashedLow, dashedHigh)
+
+        }
+
+        function getCoinData(cCode) {
+            let start = 0;
+            if (days > 121) {
+              start = days - 121;
+            }
+        
+            return market.slice(start, days).map(m => { //days -1 di
+              const co = m.coins.find(x => x.code === cCode);
+              return {
+                open: co.open,
+                high: co.high,
+                low: co.low,
+                close: co.close
+              };
+            });
+        }
+
+        $(document).off("mouseenter").on("mouseenter", ".candle", function() {
+
+            var selectedCode=$(".heartbeat").attr("id")
+
+            var selectedCoinName = coins.find(coin => coin.code === selectedCode)
+            
+            var dayIndex = parseInt($(this).attr("index"))
+            var selectedDayMarket = market[dayIndex]
+            var selectedCoin = selectedDayMarket.coins.find(coin => coin.code === selectedCode)
+
+            $("#coinMarketOnThatDay").html(" Date: " + selectedDayMarket.date + 
+                                        " Open: $" + selectedCoin.open + 
+                                        " Close: $" + selectedCoin.close + 
+                                        " High: $" + selectedCoin.high + 
+                                        " Low: $" + selectedCoin.low)
+
+            $(document).on("mouseleave", ".candle", () => {
+                $("#coinMarketOnThatDay").text("")
+            });
+        })
+
+        $(document).on("click", "#buy", function(){
+            sellOrBuy = 1
+            $("#buybitcoin").text("Buy " + $("#selectedCoin p").text().toUpperCase())
+            $("#buy").css("background", "green");
+            $("#sell").css("background","#ddd");
+            $("#buybitcoin" ).css("background","green");
+        })        
+
+        $(document).on("click", "#sell", function(){
+            sellOrBuy = 0           
+            $("#buybitcoin").text("Sell " + $("#selectedCoin p").text().toUpperCase())
+            $("#buy").css("background", "#ddd");
+            $("#sell").css("background","red");
+            $("#buybitcoin" ).css("background","red");
+        })
+
+    </script>
+</body>
+</html>
